@@ -106,14 +106,14 @@ class ChatsService (){
     // вывод собщений чата через Sequences
     fun getMesSeq(chatId: Int?,mesId: Int?,count: Int?): String{
         if (chatId == null || mesId == null || count == null) return "Указаны неверные параметры"
-        return chats.find { it.id == chatId }
+        return chats.asSequence().find { it.id == chatId }
             ?.messages?.filter { it.id >= mesId && it.id <= (mesId + count) }
             ?.map { it.mes } //?.joinToString ("\n")
             ?.joinToString ( "\n" )
             .let { "Все сообщения чата с ${getName(chatId)} через Sequences..:\n $it" }
     }
 
-    fun delChat(chatId: Int?):String{ //for (note in notes)
+    fun delChat(chatId: Int?):String{
         if (chatId == null) return "Не указан id чата"
         return if(chats.removeIf{it.id == chatId}) "Чат с ${getName(chatId)} успешно удален" else "Не найден чат с ${getName(chatId)}"
 
@@ -123,18 +123,16 @@ class ChatsService (){
         return names.findLast { it.id == nameId}?.name
     }
 
-    fun findChat(chatId: Int?):Chat?{ //for (note in notes)
+    fun findChat(chatId: Int?):Chat?{
         return chats.findLast { it.id == chatId }
     }
     // добавление сообщения
-    fun addMes(id:Int?,myReply:Boolean,mes:String): String{ //val l = b?.length ?: -1
+    fun addMes(id:Int?,myReply:Boolean,mes:String): String{
         if (id == null) return "Не указан id чата"
         var chat = findChat(id)
         if (chat == null){ chat = Chat(id,ArrayList()) //Chat(id,ArrayList()).also { chat = it }
                            chats.add(chat) } // добавим новый чат в список
-       // println("Создан чат с id = ${chat.id}  ${chats.count()}")
         val mesId = chat.add(Message(0,myReply,mes,myReply,false)) // автоматом: мои реклики- прочитанные, чужие - нет
-       // println("Добавлено сообщение: ${findChat(id)?.id}   ${findChat(id)?.messages?.get(0)?.mes}")
         return "К чату с пользователем ${getName(id)} добавлно сообщение с идентификатором ${mesId}"
     }
     // удаление сообщения
