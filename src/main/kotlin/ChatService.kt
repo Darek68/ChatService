@@ -22,6 +22,11 @@ fun main() {
 
     println("\n ${chatService.getChats(true)}")
 
+    println("\n Список всех чатов через Sequences..\n ${chatService.getAllChats()}")
+    println("\n Список непрочитанных чатов через Sequences..\n ${chatService.getNoReadChats()}")
+
+    println("\n ${chatService.getMesSeq(1,0,100)}")
+
     println("\n ${chatService.delMes(1,1)}")
     println("\nБеседа с собеседником ${chatService.getName(1)} :\n  ${chatService.getMes(1,0,100)}")
 
@@ -78,6 +83,36 @@ class ChatsService (){
 
     var chats: MutableList1<Chat> = mutableListOf()
 
+    // вывод всех чатов через Sequences
+    fun getAllChats():String{
+        var count = 0
+        return chats.asSequence().filter{ chat -> chat.messages.isNotEmpty() }
+            .map { count += 1
+                "${getName(it.id)}" }
+            .joinToString ("\n")
+            .let { "Все чаты:\n$it \n Всего $count чатов" }
+
+    }
+    // вывод не прочитанных чатов через Sequences
+    fun getNoReadChats():String{
+        var count = 0
+        return chats.asSequence().filter{ it.messages.isNotEmpty() && it.messages.filter {! it.read }.isNotEmpty() }
+            .map { count += 1
+                "${getName(it.id)}"  }
+            .joinToString ("\n")
+            .let { "Все чаты:\n$it \n Всего $count чатов" }
+
+    }
+    // вывод собщений чата через Sequences
+    fun getMesSeq(chatId: Int?,mesId: Int?,count: Int?): String{
+        if (chatId == null || mesId == null || count == null) return "Указаны неверные параметры"
+        return chats.find { it.id == chatId }
+            ?.messages?.filter { it.id >= mesId && it.id <= (mesId + count) }
+            ?.map { it.mes } //?.joinToString ("\n")
+            ?.joinToString ( "\n" )
+            .let { "Все сообщения чата с ${getName(chatId)} через Sequences..:\n $it" }
+    }
+
     fun delChat(chatId: Int?):String{ //for (note in notes)
         if (chatId == null) return "Не указан id чата"
         return if(chats.removeIf{it.id == chatId}) "Чат с ${getName(chatId)} успешно удален" else "Не найден чат с ${getName(chatId)}"
@@ -120,6 +155,7 @@ class ChatsService (){
         if (chat == null) return "Чат $chatId не существует"
         return chat.get(mesId,count)
     }
+
     // список непрочитанных чатов
     fun getUnreadChats(): String{
         val chats: List<Chat> = chats.filter {it.messages.filter {! it.read }.isNotEmpty() }
